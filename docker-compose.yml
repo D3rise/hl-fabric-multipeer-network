@@ -1,0 +1,219 @@
+version: '3.8'
+
+services:
+  ca-org0:
+    image: hyperledger/fabric-ca:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org0
+      - FABRIC_CA_SERVER_PORT=7051
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=${IP}:17051
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./orgs/ca/0:/etc/hyperledger/fabric-ca-server
+    container_name: ca-org0
+    network_mode: host
+
+  ca-org1:
+    image: hyperledger/fabric-ca:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org1
+      - FABRIC_CA_SERVER_PORT=7052
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=${IP}:17052
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./orgs/ca/1:/etc/hyperledger/fabric-ca-server
+    container_name: ca-org1
+    network_mode: host
+  
+  ca-org2:
+    image: hyperledger/fabric-ca:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org2
+      - FABRIC_CA_SERVER_PORT=7053
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=${IP}:17053
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./orgs/ca/2:/etc/hyperledger/fabric-ca-server
+    container_name: ca-org2
+    network_mode: host
+  
+  ca-org3:
+    image: hyperledger/fabric-ca:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org3
+      - FABRIC_CA_SERVER_PORT=7054
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=${IP}:17054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./orgs/ca/3:/etc/hyperledger/fabric-ca-server
+    container_name: ca-org3
+    network_mode: host
+
+  orderer:
+    container_name: orderer
+    image: hyperledger/fabric-orderer:2.4.3
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=${IP}
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/hl/org/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=file
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/hl/org/orderer/genesis.block
+      - ORDERER_OPERATIONS_LISTENADDRESS=${IP}:17050
+      - ORDERER_METRICS_PROVIDER=prometheus
+    working_dir: /hl/org/orderer
+    command: orderer
+    network_mode: host
+    volumes:
+      - ./orgs/0:/hl/org
+
+  peer-org1:
+    container_name: peer-org1
+    image: hyperledger/fabric-peer:2.4.3
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=peer-org1
+      - CORE_PEER_ADDRESS=${IP}:9051
+      - CORE_PEER_LISTENADDRESS=${IP}:9051
+      - CORE_PEER_CHAINCODEADDRESS=${IP}:8051
+      - CORE_PEER_CHAINCODELISTENADDRESS=${IP}:8051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=${IP}:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=${IP}:9051
+      - CORE_PEER_LOCALMSPID=UsersMSP
+      - CORE_PEER_MSPCONFIGPATH=/hl/org/peer/msp
+      - CORE_OPERATIONS_LISTENADDRESS=${IP}:19051
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./orgs/1:/hl/org
+        - ./orgs/common:/hl/common
+    command: peer node start
+    network_mode: host
+
+  peer-org2:
+    container_name: peer-org2
+    image: hyperledger/fabric-peer:2.4.3
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=peer-org2
+      - CORE_PEER_ADDRESS=${IP}:9052
+      - CORE_PEER_LISTENADDRESS=${IP}:9052
+      - CORE_PEER_CHAINCODEADDRESS=${IP}:8052
+      - CORE_PEER_CHAINCODELISTENADDRESS=${IP}:8052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=${IP}:9052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=${IP}:9052
+      - CORE_PEER_LOCALMSPID=ShopsMSP
+      - CORE_PEER_MSPCONFIGPATH=/hl/org/peer/msp
+      - CORE_OPERATIONS_LISTENADDRESS=${IP}:19052
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./orgs/2:/hl/org
+        - ./orgs/common:/hl/common
+    command: peer node start
+    network_mode: host
+
+  peer-org3:
+    container_name: peer-org3
+    image: hyperledger/fabric-peer:2.4.3
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=peer-org3
+      - CORE_PEER_ADDRESS=${IP}:9053
+      - CORE_PEER_LISTENADDRESS=${IP}:9053
+      - CORE_PEER_CHAINCODEADDRESS=${IP}:8053
+      - CORE_PEER_CHAINCODELISTENADDRESS=${IP}:8053
+      - CORE_PEER_GOSSIP_BOOTSTRAP=${IP}:9053
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=${IP}:9053
+      - CORE_PEER_LOCALMSPID=BankMSP
+      - CORE_PEER_MSPCONFIGPATH=/hl/org/peer/msp
+      - CORE_OPERATIONS_LISTENADDRESS=${IP}:19053
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./orgs/3:/hl/org
+        - ./orgs/common:/hl/common
+    command: peer node start
+    network_mode: host
+
+  cli-org1:
+    container_name: cli-org1
+    image: hyperledger/fabric-tools:2.4.3
+    labels:
+      service: hyperledger-fabric
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_LOCALMSPID=UsersMSP
+      - CORE_PEER_ADDRESS=${IP}:9051
+      - CORE_PEER_MSPCONFIGPATH=/hl/org/admin/msp
+    working_dir: /hl/common
+    command: /bin/bash
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./orgs/1:/hl/org
+        - ./orgs/common:/hl/common
+    network_mode: host
+
+  cli-org2:
+    container_name: cli-org2
+    image: hyperledger/fabric-tools:2.4.3
+    labels:
+      service: hyperledger-fabric
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_LOCALMSPID=ShopsMSP
+      - CORE_PEER_ADDRESS=${IP}:9052
+      - CORE_PEER_MSPCONFIGPATH=/hl/org/admin/msp
+    working_dir: /hl/common
+    command: /bin/bash
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./orgs/2:/hl/org
+        - ./orgs/common:/hl/common
+    network_mode: host
+
+  cli-org3:
+    container_name: cli-org3
+    image: hyperledger/fabric-tools:2.4.3
+    labels:
+      service: hyperledger-fabric
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_LOCALMSPID=BankMSP
+      - CORE_PEER_ADDRESS=${IP}:9053
+      - CORE_PEER_MSPCONFIGPATH=/hl/org/admin/msp
+    working_dir: /hl/common
+    command: /bin/bash
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./orgs/3:/hl/org
+        - ./orgs/common:/hl/common
+    network_mode: host
