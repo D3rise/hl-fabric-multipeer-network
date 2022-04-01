@@ -60,8 +60,14 @@ app.get('/query', asyncRoute(async (req, res) => {
 }))
 
 app.post('/invoke', asyncRoute(async (req, res) => {
-    const { args } = req.body
-    const result = await req.chaincode.createTransaction(args[0]).submit(args.slice(1))
+    const { args, transient } = req.body
+    const tx = await req.chaincode.createTransaction(args[0])
+    if(transient) {
+        for(const key in Object.keys(transient)) {
+            transient[key] = Buffer.from(transient[key])
+        }
+    }
+    const result = await tx.submit()
     res.send(result)
 }))
 
